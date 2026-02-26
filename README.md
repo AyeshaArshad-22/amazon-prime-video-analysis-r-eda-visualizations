@@ -53,6 +53,7 @@ rating	Audience rating (PG, R, etc.)
 
 📁 Project Structure
 AmazonPrimeEDA/
+
 │
 ├── data/
 │   └── amazon_prime_titles.csv
