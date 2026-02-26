@@ -1,13 +1,6 @@
 📊 Amazon Prime Video Titles Analysis
 R-Based Exploratory Data Analysis (EDA) & Data Visualization Project
 
-
-
-
-
-
-
-
 🔎 Overview
 
 This R-based Exploratory Data Analysis (EDA) project performs advanced Data Visualization and Streaming Content Analytics on the Amazon Prime Video Titles dataset.
@@ -187,32 +180,28 @@ install.packages(packages)
 
 1️⃣ Clone the repository
 
-git clone https://github.com/yourusername/AmazonPrimeEDA.git
+git clone [https://github.com/yourusername/AmazonPrimeEDA.git](https://github.com/AyeshaArshad-22/amazon-prime-video-analysis-r-eda-visualizations)
 
 2️⃣ Move dataset to data/ folder
 
 3️⃣ Open RStudio
 
-4️⃣ Run scripts in order:
-
-data_cleaning.R  
-visualizations.R  
-wordcloud_analysis.R
-
-5️⃣ View generated plots inside output/figures/
-
-📸 Sample Visualizations
-
-(Add 2–3 screenshots here for maximum impact)
-
-Example:
-
-![Heatmap](output/figures/heatmap.png)
-![WordCloud](output/figures/wordcloud.png)
-![Treemap](output/figures/treemap.png)
-
-Repositories with visuals receive significantly higher engagement.
+4️⃣ install requirements and run code file (requirements.txt file is provided)
 
 🔎 SEO Keywords
 
 Amazon Prime Video Analysis, Movies Dataset, TV Shows Dataset, R Programming Project, R EDA Project, Data Visualization in R, Streaming Content Analysis, Genre Trends Analysis, Release Year Analysis, Ratings Distribution, Heatmap in R, Word Cloud in R, Treemap Visualization, Radar Chart in R, Bubble Chart Analysis, Correlation Plot in R, ggplot2 Project, Data Analytics Portfolio
+🎯 Conclusion
+
+This project demonstrates strong analytical and visualization capabilities using R. It transforms raw streaming content data into structured insights, highlighting content distribution, genre dominance, country contributions, and platform growth patterns.
+
+Ideal for:
+
+📌 Data Analyst Portfolio
+📌 Business Intelligence Projects
+📌 Academic Submissions
+📌 Streaming Platform Research
+📌 Resume Project Showcase
+
+⭐ If you found this project useful, consider starring the repository.
+
