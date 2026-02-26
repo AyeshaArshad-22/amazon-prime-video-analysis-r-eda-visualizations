@@ -1,0 +1,10 @@
+tidyverse
+tm
+wordcloud
+RColorBrewer
+fmsb
+treemap
+reshape2
+corrplot
+VennDiagram
+NLP

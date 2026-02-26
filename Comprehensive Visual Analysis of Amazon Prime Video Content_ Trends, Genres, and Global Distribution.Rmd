@@ -1,0 +1,292 @@
+---
+title: 'Comprehensive Visual Analysis of Amazon Prime Video Content: Trends, Genres,and Global Distribution'
+  
+output:
+  pdf_document: default
+  html_document: default
+date: "2026-02-26"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(wordcloud)
+library(RColorBrewer)
+library(VennDiagram)
+library(fmsb)
+library(treemap)
+library(reshape2)
+library(corrplot)
+```
+
+
+```{r}
+data <- read.csv("amazon_prime_titles.csv", stringsAsFactors = FALSE)
+data$release_year <- as.numeric(data$release_year)
+data$duration_num <- as.numeric(gsub(" min","", data$duration))
+data$main_genre <- trimws(sapply(strsplit(data$listed_in, ","), `[`, 1))
+```
+
+
+```{r}
+ggplot(data, aes(x=type, fill=type)) +
+  geom_bar() +
+  labs(title="Distribution of Movies and TV Shows on Amazon Prime",
+       x="Content Type", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Movies significantly outnumber TV Shows, showing platform emphasis on films.
+
+
+```{r}
+top_countries <- data %>%
+  separate_rows(country, sep=",") %>%
+  count(country, sort=TRUE) %>%
+  head(10)
+
+ggplot(top_countries, aes(x=reorder(country,n), y=n)) +
+  geom_bar(stat="identity", fill="steelblue") +
+  coord_flip() +
+  labs(title="Top 10 Countries by Number of Titles",
+       x="Country", y="Number of Titles") +
+  theme_minimal()
+```
+
+The United States leads, indicating dominance in streaming content supply.
+
+
+```{r}
+top_genres <- data %>%
+  count(main_genre, sort=TRUE) %>%
+  head(10)
+
+ggplot(top_genres, aes(x=reorder(main_genre,n), y=n)) +
+  geom_bar(stat="identity", fill="darkgreen") +
+  coord_flip() +
+  labs(title="Top 10 Genres on Amazon Prime",
+       x="Genre", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Drama and Comedy dominate, reflecting audience preferences.
+
+
+```{r}
+ggplot(data, aes(x=release_year)) +
+  geom_histogram(binwidth=5, fill="orange", color="black") +
+  labs(title="Distribution of Titles by Release Year",
+       x="Release Year", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Most content released post-2000, highlighting modern streaming era.
+
+```{r}
+ggplot(data %>% filter(type=="Movie"), aes(x=duration_num)) +
+  geom_histogram(binwidth=10, fill="purple", color="black") +
+  labs(title="Distribution of Movie Duration",
+       x="Duration (Minutes)", y="Number of Movies") +
+  theme_minimal()
+```
+
+
+Majority of movies last 80–120 minutes, standard feature length.
+
+
+```{r}
+ggplot(data, aes(x=type, y=duration_num, fill=type)) +
+  geom_boxplot() +
+  labs(title="Duration Comparison by Content Type",
+       x="Content Type", y="Duration (Minutes)") +
+  theme_minimal()
+```
+
+Movies vary more in duration; TV shows are more uniform.
+
+```{r}
+type_counts <- table(data$type)
+pie(type_counts, main="Percentage of Movies vs TV Shows",
+    col=c("skyblue","pink"))
+```
+
+
+Movies occupy a larger proportion of content.
+
+
+```{r}
+year_count <- data %>% count(release_year)
+
+ggplot(year_count, aes(x=release_year, y=n)) +
+  geom_line(color="blue") +
+  labs(title="Trend of Titles Released Over Time",
+       x="Release Year", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Noticeable increase in releases post-2010.
+
+
+```{r}
+heat_data <- data %>%
+  filter(!is.na(release_year), !is.na(type)) %>%  # remove missing values
+  group_by(release_year, type) %>%
+  summarise(count = n(), .groups="drop") %>%     # summarise to get counts
+  as.data.frame()                               # ensure it's a proper data.frame
+
+# Plot heatmap
+ggplot(heat_data, aes(x = release_year, y = type, fill = count)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "lightyellow", high = "red") +
+  labs(title = "Heatmap of Content Type vs Release Year",
+       x = "Release Year", y = "Content Type", fill = "Number of Titles") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+The heatmap shows that Amazon Prime’s movie library has grown rapidly since 2010, while TV shows have fewer titles but also show recent growth, highlighting the platform’s focus on movies over time.
+
+```{r}
+text_data <- paste(data$description, collapse=" ")
+words <- strsplit(text_data, " ")[[1]]
+words <- words[nchar(words) > 4]
+
+wordcloud(words, max.words=100,
+          random.order=FALSE,
+          colors=brewer.pal(8,"Dark2"))
+```
+
+
+Frequent words highlight themes of relationships, family, life.
+The warning is because the data is very huge and it is not able to fit it all in it.We can make a corpus of data and then generate wordcloud from it then we will not get the error 
+
+```{r}
+top5 <- top_countries[1:5,]
+radar_data <- as.data.frame(t(top5$n))
+colnames(radar_data) <- top5$country
+radar_data <- rbind(rep(max(top5$n),5), rep(0,5), radar_data)
+
+radarchart(radar_data, axistype=1, pcol="blue",
+           pfcol=rgb(0.2,0.5,0.5,0.4), plwd=2,
+           title="Radar Chart of Top 5 Countries")
+
+```
+
+
+Visual comparison shows dominance by one region.
+
+```{r}
+usa <- data$title[grepl("United States", data$country)]
+india <- data$title[grepl("India", data$country)]
+uk <- data$title[grepl("United Kingdom", data$country)]
+
+venn.diagram(
+  x=list(USA=usa, India=india, UK=uk),
+  filename=NULL,
+  fill=c("red","green","blue"),
+  alpha=0.5,
+  main="Venn Diagram of Country Overlap"
+)
+```
+
+
+Overlaps indicate international collaborations
+
+```{r}
+ggplot(data, aes(x=type, fill=rating)) +
+  geom_bar(position="fill") +
+  labs(title="Rating Distribution by Content Type",
+       x="Content Type", y="Proportion") +
+  theme_minimal()
+```
+
+
+Ratings vary by content type, reflecting audience targeting.
+
+
+```{r}
+ggplot(year_count, aes(x=release_year, y=n)) +
+  geom_area(fill="skyblue", alpha=0.6) +
+  labs(title="Growth of Content Library Over Time",
+       x="Release Year", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Steady library expansion over years.
+
+
+```{r}
+ggplot(data %>% filter(type=="Movie"), aes(x=duration_num)) +
+  geom_density(fill="purple", alpha=0.5) +
+  labs(title="Density Distribution of Movie Duration",
+       x="Duration (Minutes)", y="Density") +
+  theme_minimal()
+```
+
+
+Peak density aligns with standard feature length.
+
+
+```{r}
+treemap(top_genres, index="main_genre", vSize="n",
+        title="Treemap of Genre Distribution")
+```
+
+Larger blocks show dominant genres.
+
+```{r}
+ggplot(data %>% filter(type=="Movie"), aes(x=release_year, y=duration_num)) +
+  geom_point(alpha=0.5) +
+  labs(title="Release Year vs Movie Duration",
+       x="Release Year", y="Duration (Minutes)") +
+  theme_minimal()
+```
+
+Weak relationship between release year and duration.
+
+```{r}
+ggplot(top_countries, aes(x=reorder(country,n), y=n, size=n)) +
+  geom_point() +
+  coord_flip() +
+  labs(title="Bubble Chart of Top Countries",
+       x="Country", y="Number of Titles") +
+  theme_minimal()
+```
+
+
+Bubble size emphasizes leading content-producing countries.
+
+```{r}
+ggplot(data %>% filter(main_genre %in% top_genres$main_genre),
+       aes(x=main_genre, fill=type)) +
+  geom_bar(position="dodge") +
+  coord_flip() +
+  labs(title="Genre Distribution by Content Type",
+       x="Genre", y="Count") +
+  theme_minimal()
+```
+
+
+Certain genres more frequent in movies than TV shows.
+
+
+```{r}
+library(corrplot)
+num_data <- data %>% select(release_year, duration_num) %>% na.omit()
+corrplot(cor(num_data), method="circle")
+```
+
+
+Minimal linear correlation between release year and duration.
+
+
+FINAL INSIGHTS DERIVED:
+Amazon Prime Video hosts significantly more movies than TV shows.
+Content production is heavily dominated by the United States.
+Drama and Comedy are the most common genres.
+Library growth has been steady, especially post-2010.
+Duration and release year show weak correlation, confirming standard content trends.
